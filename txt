@@ -1,0 +1,7 @@
+✅ BaseHeader.vue       - шапка сайта
+✅ TaskDesk.vue         - канбан-доска
+✅ TaskColumn.vue       - колонка с задачами
+✅ Task.vue             - карточка задачи
+✅ TaskModal.vue        - модалка просмотра задачи
+✅ NewCardModal.vue     - модалка создания задачи
+✅ ExitModal.vue        - модалка выхода

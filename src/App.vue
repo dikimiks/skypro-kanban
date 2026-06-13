@@ -1,15 +1,7 @@
 <template>
-  <h1>Привет, Vue в существующем проекте! 🎉</h1>
+  <HomeView />
 </template>
 
-<script>
-export default {
-  name: "App",
-};
+<script setup>
+import HomeView from './views/HomeView.vue'
 </script>
-
-<style>
-h1 {
-  color: blue;
-}
-</style>
