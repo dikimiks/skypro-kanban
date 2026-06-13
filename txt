@@ -5,3 +5,12 @@
 ✅ TaskModal.vue        - модалка просмотра задачи
 ✅ NewCardModal.vue     - модалка создания задачи
 ✅ ExitModal.vue        - модалка выхода
+
+src/views/
+├── BoardPage.vue       # Главная страница с доской (бывшая HomeView)
+├── LoginPage.vue       # Страница входа
+├── RegisterPage.vue    # Страница регистрации
+├── CardPage.vue        # Просмотр/редактирование карточки
+├── AddCardPage.vue     # Добавление новой задачи
+├── ExitPage.vue        # Страница выхода (модалка)
+└── NotFoundPage.vue    # 404 страница
