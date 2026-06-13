@@ -2,14 +2,12 @@
   <header class="header">
     <div class="container">
       <div class="header__block">
-        <!-- Светлый логотип -->
+        <!-- Логотипы -->
         <div class="header__logo _show _light">
           <a href="" target="_self">
             <img src="/images/logo.png" alt="logo" />
           </a>
         </div>
-        
-        <!-- Темный логотип -->
         <div class="header__logo _dark">
           <a href="" target="_self">
             <img src="/images/logo_dark.png" alt="logo" />
@@ -17,15 +15,23 @@
         </div>
         
         <nav class="header__nav">
-          <button class="header__btn-main-new _hover01" id="btnMainNew">
+          <button class="header__btn-main-new _hover01">
             <a href="#popNewCard">Создать новую задачу</a>
           </button>
           
-          <a href="#user-set-target" class="header__user _hover02">
+          <!-- Кнопка пользователя -->
+          <button 
+            class="header__user _hover02" 
+            @click="toggleUserPopup"
+          >
             Ivan Ivanov
-          </a>
+          </button>
           
-          <div class="header__pop-user-set pop-user-set" id="user-set-target">
+          <!-- Модалка пользователя -->
+          <div 
+            class="header__pop-user-set pop-user-set" 
+            :style="{ display: isUserPopupVisible ? 'block' : 'none' }"
+          >
             <p class="pop-user-set__name">Ivan Ivanov</p>
             <p class="pop-user-set__mail">ivan.ivanov@gmail.com</p>
             <div class="pop-user-set__theme">
@@ -41,3 +47,28 @@
     </div>
   </header>
 </template>
+
+<script setup>
+import { ref } from 'vue'
+
+const isUserPopupVisible = ref(false)
+
+const toggleUserPopup = () => {
+  isUserPopupVisible.value = !isUserPopupVisible.value
+}
+
+// Закрыть попап при клике вне его (опционально)
+const closeUserPopup = () => {
+  isUserPopupVisible.value = false
+}
+</script>
+
+<style scoped>
+.header__user {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+</style>
