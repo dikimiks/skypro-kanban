@@ -3,11 +3,18 @@
     <div class="container">
       <div class="main__block">
         <div class="main__content">
+          <!-- Состояние загрузки -->
           <div v-if="isLoading" class="loading-container">
             <div class="loading-spinner"></div>
             <p class="loading-text">Данные загружаются...</p>
           </div>
 
+          <!-- Когда загрузка прошла, но задач нет -->
+          <div v-else-if="!hasTasks" class="empty-container">
+            <p class="empty-text">Задач нет</p>
+          </div>
+
+          <!-- Колонки с задачами -->
           <template v-else>
             <TaskColumn 
               v-for="column in columns" 
@@ -22,7 +29,7 @@
                 :theme-text="task.topic"
                 :task-title="task.title"
                 :date="task.date"
-                :description="task.description || 'Описание пока не добавлено'"
+                :description="task.description"
                 @open-task="handleOpenTask"
               />
             </TaskColumn>
@@ -34,10 +41,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import TaskColumn from './TaskColumn.vue'
 import Task from './Task.vue'
-import { tasksData } from '../data/tasks.js'
+// Временно для проверки
+// import { tasksData } from '../data/tasks.js'  // закомментировать
+const tasksData = []  // добавить эту строку
 
 const emit = defineEmits(['open-task'])
 
@@ -51,6 +60,11 @@ const columnStatuses = [
   { status: "Тестирование", title: "Тестирование" },
   { status: "Готово", title: "Готово" }
 ]
+
+// Проверяем, есть ли задачи
+const hasTasks = computed(() => {
+  return columns.value.some(column => column.tasks.length > 0)
+})
 
 const getThemeClass = (topic) => {
   const themes = {
@@ -91,23 +105,46 @@ onMounted(() => {
   width: 100%;
 }
 
+/* Анимация спиннера */
 .loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #565eef;
+  width: 60px;
+  height: 60px;
+  border: 4px solid var(--color-bg-light);
+  border-top: 4px solid var(--color-primary);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 .loading-text {
   margin-top: 20px;
   font-size: 16px;
-  color: #94a6be;
+  color: var(--color-text-secondary);
+  font-family: 'Roboto', sans-serif;
 }
 
+/* Стили для пустого состояния */
+.empty-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  width: 100%;
+}
+
+.empty-text {
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  font-family: 'Roboto', sans-serif;
+  text-align: center;
+}
+
+/* Анимация вращения */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

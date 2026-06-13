@@ -1,4 +1,25 @@
-* {
+:root {
+  /* Цвета тем */
+  --color-orange-bg: #ffe4c2;
+  --color-orange-text: #ff6d00;
+  --color-green-bg: #b4fdd1;
+  --color-green-text: #06b16e;
+  --color-purple-bg: #e9d4ff;
+  --color-purple-text: #9a48f1;
+  --color-gray-bg: #94a6be;
+  --color-gray-text: #ffffff;
+  
+  /* Основные цвета */
+  --color-primary: #565eef;
+  --color-primary-hover: #33399b;
+  --color-border: #d4dbe5;
+  --color-text: #000000;
+  --color-text-secondary: #94a6be;
+  --color-bg: #f1f1f1;
+  --color-bg-light: #eaeef6;
+  --color-white: #ffffff;
+}
+*{
   margin: 0;
   padding: 0;
   box-sizing: border-box;
