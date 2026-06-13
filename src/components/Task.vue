@@ -5,18 +5,18 @@
         <div :class="['card__theme', `_${theme}`]">
           <p :class="`_${theme}`">{{ themeText }}</p>
         </div>
-        <a href="#popBrowse" target="_self">
-          <div class="card__btn">
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-        </a>
+        
+        <!-- Кнопка с тремя точками -->
+        <div class="card__btn" @click="openTask">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
       </div>
+      
       <div class="card__content">
-        <a href="" target="_blank">
-          <h3 class="card__title">{{ taskTitle }}</h3>
-        </a>
+        <h3 class="card__title" @click="openTask">{{ taskTitle }}</h3>
+        
         <div class="card__date">
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13" fill="none">
             <g clip-path="url(#clip0_1_415)">
@@ -37,7 +37,11 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
+  taskId: {
+    type: [Number, String],
+    required: true
+  },
   theme: {
     type: String,
     default: 'orange'
@@ -53,6 +57,31 @@ defineProps({
   date: {
     type: String,
     default: '30.10.23'
+  },
+  description: {
+    type: String,
+    default: 'Описание задачи'
   }
 })
+
+const emit = defineEmits(['open-task'])
+
+const openTask = () => {
+  emit('open-task', {
+    id: props.taskId,
+    title: props.taskTitle,
+    theme: props.theme,
+    themeText: props.themeText,
+    description: props.description
+  })
+}
 </script>
+
+<style scoped>
+.card__btn {
+  cursor: pointer;
+}
+.card__title {
+  cursor: pointer;
+}
+</style>
