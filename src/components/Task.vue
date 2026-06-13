@@ -6,8 +6,8 @@
           <p :class="`_${theme}`">{{ themeText }}</p>
         </div>
         
-        <!-- Кнопка с тремя точками -->
-        <div class="card__btn" @click="openTask">
+        <!-- Кнопка с тремя точками - открывает модалку -->
+        <div class="card__btn" onclick="document.getElementById('popBrowse').style.display='block'">
           <div></div>
           <div></div>
           <div></div>

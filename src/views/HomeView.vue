@@ -3,17 +3,13 @@
     <BaseHeader />
     <TaskDesk @open-task="openTaskModal" />
     
-    <!-- Модалка просмотра задачи -->
     <TaskModal 
-      v-if="isTaskModalVisible"
       :task-title="selectedTask.title"
       :theme="selectedTask.theme"
       :theme-text="selectedTask.themeText"
       :description="selectedTask.description"
-      @close="closeTaskModal"
     />
     
-    <!-- Остальные модалки -->
     <ExitModal />
     <NewCardModal />
   </div>
@@ -27,8 +23,6 @@ import TaskModal from '../components/TaskModal.vue'
 import ExitModal from '../components/ExitModal.vue'
 import NewCardModal from '../components/NewCardModal.vue'
 
-// Состояние модалки задачи
-const isTaskModalVisible = ref(false)
 const selectedTask = ref({
   title: '',
   theme: 'orange',
@@ -36,14 +30,7 @@ const selectedTask = ref({
   description: ''
 })
 
-// Функция открытия модалки
 const openTaskModal = (task) => {
   selectedTask.value = task
-  isTaskModalVisible.value = true
-}
-
-// Функция закрытия модалки
-const closeTaskModal = () => {
-  isTaskModalVisible.value = false
 }
 </script>
