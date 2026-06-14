@@ -19,17 +19,17 @@
           </button>
           
           <a href="#" class="header__user _hover02" @click.prevent="toggleUserPopup">
-            {{ userName }}
+            {{ displayName }}
           </a>
           
           <div class="header__pop-user-set pop-user-set" :class="{ 'pop-user-set--open': isUserPopupVisible }">
-            <p class="pop-user-set__name">{{ userName }}</p>
-            <p class="pop-user-set__mail">{{ userEmail }}</p>
+            <p class="pop-user-set__name">{{ displayName }}</p>
+            <p class="pop-user-set__mail">{{ displayLogin }}</p>
             <div class="pop-user-set__theme">
               <p>Темная тема</p>
               <input type="checkbox" class="checkbox" name="checkbox" />
             </div>
-            <button type="button" class="_hover03" @click="logout">
+            <button type="button" class="_hover03" @click="handleLogout">
               Выйти
             </button>
           </div>
@@ -40,14 +40,19 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+// Получаем данные и функции из provide
+const { user, logout } = inject('auth')
+
 const isUserPopupVisible = ref(false)
 
-const userName = computed(() => localStorage.getItem('userName') || 'Ivan Ivanov')
-const userEmail = computed(() => localStorage.getItem('userEmail') || 'ivan.ivanov@gmail.com')
+// Используем данные из inject, а не из localStorage напрямую
+const displayName = computed(() => user.value?.name || 'Ivan Ivanov')
+const displayLogin = computed(() => user.value?.login || 'ivan.ivanov@gmail.com')
 
 const toggleUserPopup = () => {
   isUserPopupVisible.value = !isUserPopupVisible.value
@@ -60,17 +65,13 @@ const openNewCardModal = () => {
   }
 }
 
-const logout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('userName')
-  localStorage.removeItem('userLogin')
-  localStorage.removeItem('isAuth')
+const handleLogout = () => {
+  logout()  // Используем функцию из inject
   router.push('/login')
 }
 </script>
 
 <style scoped>
-/* Только для управления видимостью попапа */
 .header__pop-user-set {
   display: none;
 }
@@ -78,6 +79,4 @@ const logout = () => {
 .header__pop-user-set.pop-user-set--open {
   display: block;
 }
-
-/* Остальные стили берутся из main.css */
 </style>

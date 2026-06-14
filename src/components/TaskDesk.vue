@@ -8,8 +8,8 @@
             <p class="loading-text">Данные загружаются...</p>
           </div>
 
-          <div v-else-if="errorMessage" class="error-container">
-            <p class="error-text">{{ errorMessage }}</p>
+          <div v-else-if="error" class="error-container">
+            <p class="error-text">{{ error }}</p>
             <button class="retry-btn" @click="loadTasks">Повторить</button>
           </div>
 
@@ -43,16 +43,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject, watch } from 'vue'
 import TaskColumn from './TaskColumn.vue'
 import Task from './Task.vue'
-import { getTasks } from '../services/api.js'
 
 const emit = defineEmits(['open-task'])
 
-const isLoading = ref(true)
-const errorMessage = ref('')
-const tasksList = ref([])
+// Получаем данные и функции из provide
+const { tasks, isLoading, error, loadTasks } = inject('tasks')
+
 const columns = ref([])
 
 const columnStatuses = [
@@ -82,24 +81,11 @@ const formatDate = (dateString) => {
   return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
 }
 
-const loadTasks = async () => {
-  isLoading.value = true
-  errorMessage.value = ''
-  
-  try {
-    const response = await getTasks()
-    tasksList.value = response.tasks || []
-    
-    columns.value = columnStatuses.map(column => ({
-      ...column,
-      tasks: tasksList.value.filter(task => task.status === column.status)
-    }))
-  } catch (error) {
-    errorMessage.value = error.error || 'Ошибка загрузки задач'
-    console.error('Ошибка:', error)
-  } finally {
-    isLoading.value = false
-  }
+const updateColumns = () => {
+  columns.value = columnStatuses.map(column => ({
+    ...column,
+    tasks: tasks.value.filter(task => task.status === column.status)
+  }))
 }
 
 const handleOpenTask = (task) => {
@@ -110,6 +96,11 @@ const handleOpenTask = (task) => {
 const refreshTasks = () => {
   loadTasks()
 }
+
+// Следим за изменением задач
+watch(tasks, () => {
+  updateColumns()
+}, { deep: true, immediate: true })
 
 onMounted(() => {
   loadTasks()

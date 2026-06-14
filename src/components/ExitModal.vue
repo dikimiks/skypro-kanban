@@ -19,9 +19,13 @@
 </template>
 
 <script setup>
+import { inject } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+// Получаем функцию выхода из provide
+const { logout } = inject('auth')
 
 const closeModal = () => {
   const modal = document.getElementById('popExit')
@@ -31,11 +35,8 @@ const closeModal = () => {
 }
 
 const handleExit = () => {
-  // Очищаем localStorage
-  localStorage.removeItem('token')
-  localStorage.removeItem('userName')
-  localStorage.removeItem('userLogin')
-  localStorage.removeItem('isAuth')
+  // Используем функцию logout из inject вместо прямого удаления из localStorage
+  logout()
   
   // Закрываем модалку
   closeModal()

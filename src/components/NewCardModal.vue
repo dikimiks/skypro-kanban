@@ -116,10 +116,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { createTask as createTaskAPI } from '../services/api.js'
+import { ref, computed, inject } from 'vue'
 
 const emit = defineEmits(['task-created'])
+
+// Получаем функцию создания задачи из provide
+const { addTask } = inject('tasks')
 
 const taskTitle = ref('')
 const taskDescription = ref('')
@@ -140,11 +142,6 @@ const selectedDateStr = computed(() => {
 
 const formatDate = (date) => {
   return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
-}
-
-const getFullDateString = (date) => {
-  const d = new Date(date)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 const calendarDays = computed(() => {
@@ -253,9 +250,15 @@ const createTask = async () => {
       date: selectedDate.value ? new Date(selectedDate.value).toISOString() : new Date().toISOString()
     }
     
-    await createTaskAPI(taskData)
-    emit('task-created')
-    closeModal()
+    // Используем inject вместо прямого вызова API
+    const result = await addTask(taskData)
+    
+    if (result.success) {
+      emit('task-created')
+      closeModal()
+    } else {
+      apiError.value = result.error || 'Ошибка создания задачи'
+    }
   } catch (error) {
     apiError.value = error.error || 'Ошибка создания задачи'
   } finally {
@@ -263,4 +266,3 @@ const createTask = async () => {
   }
 }
 </script>
-

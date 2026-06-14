@@ -8,15 +8,15 @@
       <form @submit.prevent="handleRegister">
         <div class="form-group">
           <label>Логин</label>
-          <input type="text" v-model="login" required />
+          <input type="text" v-model="loginValue" required />
         </div>
         <div class="form-group">
           <label>Имя</label>
-          <input type="text" v-model="name" required />
+          <input type="text" v-model="nameValue" required />
         </div>
         <div class="form-group">
           <label>Пароль</label>
-          <input type="password" v-model="password" required />
+          <input type="password" v-model="passwordValue" required />
         </div>
         <button type="submit" :disabled="isLoading">
           {{ isLoading ? 'Регистрация...' : 'Зарегистрироваться' }}
@@ -30,20 +30,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const login = ref('')
-const name = ref('')
-const password = ref('')
+const { register } = inject('auth')  // ← Получаем функцию регистрации из provide
+
+const loginValue = ref('')
+const nameValue = ref('')
+const passwordValue = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
 const handleRegister = async () => {
-  if (!login.value || !name.value || !password.value) {
+  if (!loginValue.value || !nameValue.value || !passwordValue.value) {
     errorMessage.value = 'Заполните все поля'
+    return
+  }
+
+  if (passwordValue.value.length < 4) {
+    errorMessage.value = 'Пароль должен быть не менее 4 символов'
     return
   }
 
@@ -51,44 +58,19 @@ const handleRegister = async () => {
   errorMessage.value = ''
   successMessage.value = ''
 
-  try {
-    const response = await fetch('https://wedev-api.sky.pro/api/user', {
-      method: 'POST',
-      // Не добавляем заголовок Content-Type
-      body: JSON.stringify({
-        login: login.value,
-        name: name.value,
-        password: password.value,
-      }),
-    })
+  // ← Используем inject вместо прямого вызова API
+  const result = await register(loginValue.value, nameValue.value, passwordValue.value)
 
-    const data = await response.json()
-
-    if (!response.ok) {
-      // Если статус 400, скорее всего пользователь уже существует
-      throw new Error(data.error || 'Ошибка регистрации. Возможно, логин уже занят.')
-    }
-
-    if (data.user?.token) {
-      // Успешная регистрация: сохраняем токен и данные пользователя
-      localStorage.setItem('token', data.user.token)
-      localStorage.setItem('userName', data.user.name)
-      localStorage.setItem('userLogin', data.user.login)
-      localStorage.setItem('isAuth', 'true')
-
-      successMessage.value = 'Регистрация успешна! Перенаправление...'
-      setTimeout(() => {
-        router.push('/')
-      }, 1500)
-    } else {
-      throw new Error('Некорректный ответ сервера')
-    }
-  } catch (error) {
-    console.error('Ошибка регистрации:', error)
-    errorMessage.value = error.message
-  } finally {
-    isLoading.value = false
+  if (result.success) {
+    successMessage.value = 'Регистрация успешна! Перенаправление...'
+    setTimeout(() => {
+      router.push('/')
+    }, 1500)
+  } else {
+    errorMessage.value = result.error || 'Ошибка регистрации. Возможно, логин уже занят.'
   }
+
+  isLoading.value = false
 }
 </script>
 

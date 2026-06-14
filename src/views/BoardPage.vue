@@ -16,11 +16,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import BaseHeader from '../components/BaseHeader.vue'
 import TaskDesk from '../components/TaskDesk.vue'
 import TaskModal from '../components/TaskModal.vue'
 import NewCardModal from '../components/NewCardModal.vue'
+
+// Получаем функции из provide
+const { addTask } = inject('tasks')
 
 const taskDeskRef = ref(null)
 const selectedTask = ref({
@@ -37,8 +40,11 @@ const openTaskModal = (task) => {
   if (modal) modal.style.display = 'block'
 }
 
-const onTaskCreated = () => {
-  if (taskDeskRef.value) {
+const onTaskCreated = async (newTask) => {
+  // Используем inject вместо прямого вызова API
+  const result = await addTask(newTask)
+  
+  if (result.success && taskDeskRef.value) {
     taskDeskRef.value.refreshTasks()
   }
 }

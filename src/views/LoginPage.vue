@@ -28,65 +28,33 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const { login } = inject('auth')  // ← Получаем функцию логина из provide
+
 const loginValue = ref('admin')
 const passwordValue = ref('admin')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-const loginWithRetry = async (login, password, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 секунд таймаут
-      
-      const response = await fetch('https://wedev-api.sky.pro/api/user/login', {
-        method: 'POST',
-        headers: {},
-        body: JSON.stringify({ login, password }),
-        signal: controller.signal
-      })
-      
-      clearTimeout(timeoutId)
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        return { success: true, data }
-      } else {
-        return { success: false, error: data.error || 'Ошибка авторизации' }
-      }
-      
-    } catch (error) {
-      console.log(`Попытка ${i + 1} не удалась:`, error.message)
-      if (i === retries - 1) {
-        return { success: false, error: 'Сервер не отвечает. Попробуйте позже.' }
-      }
-      // Ждём 1 секунду перед следующей попыткой
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
-  }
-}
-
 const handleLogin = async () => {
+  if (!loginValue.value || !passwordValue.value) {
+    errorMessage.value = 'Заполните все поля'
+    return
+  }
+  
   isLoading.value = true
   errorMessage.value = ''
   
-  const result = await loginWithRetry(loginValue.value, passwordValue.value)
+  // ← Используем inject вместо прямого вызова API
+  const result = await login(loginValue.value, passwordValue.value)
   
   if (result.success) {
-    const data = result.data
-    localStorage.setItem('token', data.user.token)
-    localStorage.setItem('userName', data.user.name)
-    localStorage.setItem('userLogin', data.user.login)
-    localStorage.setItem('isAuth', 'true')
-    
     router.push('/')
   } else {
-    errorMessage.value = result.error
+    errorMessage.value = result.error || 'Ошибка входа'
   }
   
   isLoading.value = false
