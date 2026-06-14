@@ -8,6 +8,11 @@
             <p class="loading-text">Данные загружаются...</p>
           </div>
 
+          <div v-else-if="errorMessage" class="error-container">
+            <p class="error-text">{{ errorMessage }}</p>
+            <button class="retry-btn" @click="loadTasks">Повторить</button>
+          </div>
+
           <div v-else-if="!hasTasks" class="empty-container">
             <p class="empty-text">Задач нет</p>
           </div>
@@ -20,12 +25,12 @@
             >
               <Task 
                 v-for="task in column.tasks"
-                :key="task.id"
-                :task-id="task.id"
+                :key="task._id"
+                :task-id="task._id"
                 :theme="getThemeClass(task.topic)"
                 :theme-text="task.topic"
                 :task-title="task.title"
-                :date="task.date"
+                :date="formatDate(task.date)"
                 :description="task.description"
                 @open-task="handleOpenTask"
               />
@@ -41,11 +46,13 @@
 import { ref, computed, onMounted } from 'vue'
 import TaskColumn from './TaskColumn.vue'
 import Task from './Task.vue'
-import { tasksData } from '../data/tasks.js'
+import { getTasks } from '../services/api.js'
 
 const emit = defineEmits(['open-task'])
 
 const isLoading = ref(true)
+const errorMessage = ref('')
+const tasksList = ref([])
 const columns = ref([])
 
 const columnStatuses = [
@@ -69,27 +76,47 @@ const getThemeClass = (topic) => {
   return themes[topic] || "orange"
 }
 
-const loadTasks = () => {
+const formatDate = (dateString) => {
+  if (!dateString) return 'Дата не указана'
+  const date = new Date(dateString)
+  return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
+}
+
+const loadTasks = async () => {
   isLoading.value = true
-  setTimeout(() => {
+  errorMessage.value = ''
+  
+  try {
+    const response = await getTasks()
+    tasksList.value = response.tasks || []
+    
     columns.value = columnStatuses.map(column => ({
       ...column,
-      tasks: tasksData.filter(task => task.status === column.status)
+      tasks: tasksList.value.filter(task => task.status === column.status)
     }))
+  } catch (error) {
+    errorMessage.value = error.error || 'Ошибка загрузки задач'
+    console.error('Ошибка:', error)
+  } finally {
     isLoading.value = false
-  }, 500)
+  }
 }
 
 const handleOpenTask = (task) => {
   emit('open-task', task)
 }
 
+// Обновить задачи (для родительского компонента)
+const refreshTasks = () => {
+  loadTasks()
+}
+
 onMounted(() => {
   loadTasks()
 })
 
-// 👇 ЭТО САМОЕ ВАЖНОЕ - добавьте эту строку!
 defineExpose({
+  refreshTasks,
   loadTasks
 })
 </script>
@@ -107,8 +134,8 @@ defineExpose({
 .loading-spinner {
   width: 60px;
   height: 60px;
-  border: 4px solid var(--color-bg-light);
-  border-top: 4px solid var(--color-primary);
+  border: 4px solid #eaeef6;
+  border-top: 4px solid #565eef;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -116,8 +143,7 @@ defineExpose({
 .loading-text {
   margin-top: 20px;
   font-size: 16px;
-  color: var(--color-text-secondary);
-  font-family: 'Roboto', sans-serif;
+  color: #94a6be;
 }
 
 .empty-container {
@@ -130,17 +156,36 @@ defineExpose({
 
 .empty-text {
   font-size: 18px;
-  color: var(--color-text-secondary);
-  font-family: 'Roboto', sans-serif;
+  color: #94a6be;
   text-align: center;
 }
 
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  width: 100%;
+}
+
+.error-text {
+  font-size: 16px;
+  color: #e74c3c;
+  margin-bottom: 20px;
+}
+
+.retry-btn {
+  padding: 10px 20px;
+  background: #565eef;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>

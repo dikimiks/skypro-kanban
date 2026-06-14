@@ -6,6 +6,8 @@
           <h3 class="pop-new-card__ttl">Создание задачи</h3>
           <a href="#" class="pop-new-card__close" @click.prevent="closeModal">✖</a>
           
+          <div v-if="apiError" class="error-message">{{ apiError }}</div>
+          
           <div class="pop-new-card__wrap">
             <div class="pop-new-card__form form-new">
               <div class="form-new__block">
@@ -28,7 +30,6 @@
               </div>
             </div>
 
-            <!-- Полный календарь -->
             <div class="pop-new-card__calendar calendar">
               <p class="calendar__ttl subttl">Даты</p>
               <div class="calendar__block">
@@ -70,8 +71,8 @@
                 </div>
                 <div class="calendar__period">
                   <p class="calendar__p date-end">
-                    Выберите срок исполнения
-                    <span class="date-control">{{ selectedDateStr }}</span>
+                    Срок исполнения:
+                    <span class="date-control">{{ selectedDateStr || 'не выбран' }}</span>
                   </p>
                 </div>
               </div>
@@ -81,20 +82,32 @@
           <div class="pop-new-card__categories categories">
             <p class="categories__p subttl">Категория</p>
             <div class="categories__themes">
-              <div class="categories__theme _orange _active-category" @click="selectedCategory = 'orange'">
+              <div 
+                class="categories__theme _orange" 
+                :class="{ '_active-category': selectedCategory === 'orange' }"
+                @click="selectedCategory = 'orange'"
+              >
                 <p class="_orange">Web Design</p>
               </div>
-              <div class="categories__theme _green" @click="selectedCategory = 'green'">
+              <div 
+                class="categories__theme _green"
+                :class="{ '_active-category': selectedCategory === 'green' }"
+                @click="selectedCategory = 'green'"
+              >
                 <p class="_green">Research</p>
               </div>
-              <div class="categories__theme _purple" @click="selectedCategory = 'purple'">
+              <div 
+                class="categories__theme _purple"
+                :class="{ '_active-category': selectedCategory === 'purple' }"
+                @click="selectedCategory = 'purple'"
+              >
                 <p class="_purple">Copywriting</p>
               </div>
             </div>
           </div>
 
-          <button class="form-new__create _hover01" @click="createTask">
-            Создать задачу
+          <button class="form-new__create _hover01" @click="createTask" :disabled="isCreating">
+            {{ isCreating ? 'Создание...' : 'Создать задачу' }}
           </button>
         </div>
       </div>
@@ -104,6 +117,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { createTask as createTaskAPI } from '../services/api.js'
 
 const emit = defineEmits(['task-created'])
 
@@ -111,6 +125,8 @@ const taskTitle = ref('')
 const taskDescription = ref('')
 const selectedCategory = ref('orange')
 const selectedDate = ref('')
+const isCreating = ref(false)
+const apiError = ref('')
 
 // Календарь
 const currentDate = ref(new Date())
@@ -119,8 +135,17 @@ const currentMonth = computed(() => {
 })
 
 const selectedDateStr = computed(() => {
-  return selectedDate.value || 'не выбрана'
+  return selectedDate.value || ''
 })
+
+const formatDate = (date) => {
+  return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
+}
+
+const getFullDateString = (date) => {
+  const d = new Date(date)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 const calendarDays = computed(() => {
   const year = currentDate.value.getFullYear()
@@ -162,7 +187,6 @@ const calendarDays = computed(() => {
     })
   }
   
-  // Дни следующего месяца (чтобы заполнить сетку)
   const remainingDays = 42 - days.length
   for (let i = 1; i <= remainingDays; i++) {
     days.push({
@@ -175,10 +199,6 @@ const calendarDays = computed(() => {
   
   return days
 })
-
-const formatDate = (date) => {
-  return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
-}
 
 const selectDate = (day) => {
   if (!day.isOtherMonth) {
@@ -212,24 +232,45 @@ const closeModal = () => {
   taskDescription.value = ''
   selectedCategory.value = 'orange'
   selectedDate.value = ''
+  apiError.value = ''
 }
 
-const createTask = () => {
+const createTask = async () => {
   if (!taskTitle.value) {
-    alert('Введите название задачи')
+    apiError.value = 'Введите название задачи'
     return
   }
   
-  const newTask = {
-    id: Date.now(),
-    topic: getCategoryText(selectedCategory.value),
-    title: taskTitle.value,
-    description: taskDescription.value || 'Описание отсутствует',
-    date: selectedDate.value || new Date().toLocaleDateString(),
-    status: "Без статуса"
-  }
+  isCreating.value = true
+  apiError.value = ''
   
-  emit('task-created', newTask)
-  closeModal()
+  try {
+    const taskData = {
+      title: taskTitle.value,
+      description: taskDescription.value || '',
+      topic: getCategoryText(selectedCategory.value),
+      status: "Без статуса",
+      date: selectedDate.value ? new Date(selectedDate.value).toISOString() : new Date().toISOString()
+    }
+    
+    await createTaskAPI(taskData)
+    emit('task-created')
+    closeModal()
+  } catch (error) {
+    apiError.value = error.error || 'Ошибка создания задачи'
+  } finally {
+    isCreating.value = false
+  }
 }
 </script>
+
+<style scoped>
+.error-message {
+  background: #fee;
+  color: #e74c3c;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+</style>
