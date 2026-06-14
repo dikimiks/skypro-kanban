@@ -46,6 +46,7 @@
 import { ref, computed, onMounted, inject, watch } from 'vue'
 import TaskColumn from './TaskColumn.vue'
 import Task from './Task.vue'
+import { columnStatuses } from '../data/statuses.js'
 
 const emit = defineEmits(['open-task'])
 
@@ -54,13 +55,7 @@ const { tasks, isLoading, error, loadTasks } = inject('tasks')
 
 const columns = ref([])
 
-const columnStatuses = [
-  { status: "Без статуса", title: "Без статуса" },
-  { status: "Нужно сделать", title: "Нужно сделать" },
-  { status: "В работе", title: "В работе" },
-  { status: "Тестирование", title: "Тестирование" },
-  { status: "Готово", title: "Готово" }
-]
+
 
 const hasTasks = computed(() => {
   return columns.value.some(column => column.tasks.length > 0)
