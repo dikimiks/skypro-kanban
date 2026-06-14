@@ -99,15 +99,16 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #eaeef6;
+  background: var(--color-bg-light);
 }
 
 .login-container {
-  background: white;
+  background: var(--color-white);
   padding: 40px;
   border-radius: 10px;
   width: 100%;
   max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
 .form-group {
@@ -117,23 +118,30 @@ const handleLogin = async () => {
 .form-group label {
   display: block;
   margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #d4dbe5;
+  padding: 12px;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
+  font-size: 14px;
 }
 
 button {
   width: 100%;
   padding: 12px;
-  background: #565eef;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
   border: none;
   border-radius: 8px;
+  font-size: 16px;
   cursor: pointer;
+}
+
+button:hover {
+  background: var(--color-primary-hover);
 }
 
 button:disabled {
@@ -147,5 +155,6 @@ button:disabled {
   padding: 10px;
   border-radius: 8px;
   margin-bottom: 20px;
+  text-align: center;
 }
 </style>

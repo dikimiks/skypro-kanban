@@ -264,13 +264,3 @@ const createTask = async () => {
 }
 </script>
 
-<style scoped>
-.error-message {
-  background: #fee;
-  color: #e74c3c;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-</style>

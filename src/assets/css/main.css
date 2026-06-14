@@ -1140,4 +1140,14 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.error-message {
+  background: #fee;
+  color: #e74c3c;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 }

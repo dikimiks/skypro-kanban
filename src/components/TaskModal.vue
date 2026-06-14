@@ -134,13 +134,6 @@
   </div>
 </template>
 
-<style scoped>
-/* Дополнительные стили для модалки при необходимости */
-.pop-browse {
-  display: none;
-}
-</style>
-
 <script setup>
 const props = defineProps({
   taskTitle: {

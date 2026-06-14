@@ -98,45 +98,56 @@ const handleRegister = async () => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #eaeef6;
+  background: var(--color-bg-light);
 }
+
 .register-container {
-  background: white;
+  background: var(--color-white);
   padding: 40px;
   border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   width: 100%;
   max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
+
 .form-group {
   margin-bottom: 20px;
 }
+
 .form-group label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
 }
+
 .form-group input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #d4dbe5;
+  padding: 12px;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 14px;
 }
+
 button {
   width: 100%;
   padding: 12px;
-  background: #565eef;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
   border: none;
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
 }
+
+button:hover {
+  background: var(--color-primary-hover);
+}
+
 button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
 .error-message {
   background: #fee;
   color: #e74c3c;
@@ -145,6 +156,7 @@ button:disabled {
   margin-bottom: 20px;
   text-align: center;
 }
+
 .success-message {
   background: #d4edda;
   color: #155724;
@@ -152,13 +164,5 @@ button:disabled {
   border-radius: 8px;
   margin-bottom: 20px;
   text-align: center;
-}
-.login-link {
-  text-align: center;
-  margin-top: 20px;
-}
-.login-link a {
-  color: #565eef;
-  text-decoration: none;
 }
 </style>
