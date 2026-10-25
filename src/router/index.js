@@ -9,9 +9,8 @@ import AddCardPage from '../views/AddCardPage.vue'
 import ExitPage from '../views/ExitPage.vue'
 import NotFoundPage from '../views/NotFoundPage.vue'
 
-// Проверка авторизации
 const isAuthenticated = () => {
-  return localStorage.getItem('isAuth') === 'true'
+  return Boolean(localStorage.getItem('token'))
 }
 
 // Маршруты

@@ -1,5 +1,9 @@
 <template>
-  <div class="main__column">
+  <div
+    class="main__column"
+    @dragover.prevent
+    @drop.prevent="$emit('drop-task', columnStatus)"
+  >
     <div class="column__title">
       <p>{{ columnTitle }}</p>
     </div>
@@ -15,8 +19,14 @@ defineProps({
     type: String,
     required: true,
     default: 'Без названия'
+  },
+  columnStatus: {
+    type: String,
+    required: true
   }
 })
+
+defineEmits(['drop-task'])
 </script>
 
 <style scoped>
@@ -51,7 +61,9 @@ defineProps({
   }
   .cards {
     display: flex;
-    overflow-y: auto;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 }
 </style>

@@ -1,51 +1,55 @@
 <template>
   <div class="wrapper">
-    <BaseHeader />
-    <TaskDesk ref="taskDeskRef" @open-task="openTaskModal" />
-    
-    <TaskModal 
-      :task-title="selectedTask.title"
-      :theme="selectedTask.theme"
-      :theme-text="selectedTask.themeText"
-      :description="selectedTask.description"
-      :date="selectedTask.date"
+    <BaseHeader @create-task="isNewCardOpen = true" />
+    <TaskDesk @open-task="activeTask = $event" />
+
+    <TaskModal
+      :task="selectedTask"
+      :visible="Boolean(selectedTask)"
+      @close="closeTask"
     />
-    
-    <NewCardModal @task-created="onTaskCreated" />
+
+    <NewCardModal :visible="isNewCardOpen" @close="isNewCardOpen = false" />
+    <ExitModal :visible="showExit" @close="closeExit" />
   </div>
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { computed, inject, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import BaseHeader from '../components/BaseHeader.vue'
 import TaskDesk from '../components/TaskDesk.vue'
 import TaskModal from '../components/TaskModal.vue'
 import NewCardModal from '../components/NewCardModal.vue'
+import ExitModal from '../components/ExitModal.vue'
 
-// Получаем функции из provide
-const { addTask } = inject('tasks')
-
-const taskDeskRef = ref(null)
-const selectedTask = ref({
-  title: '',
-  theme: 'orange',
-  themeText: '',
-  description: '',
-  date: ''
+const props = defineProps({
+  taskId: {
+    type: [String, Number],
+    default: null
+  },
+  showExit: {
+    type: Boolean,
+    default: false
+  }
 })
 
-const openTaskModal = (task) => {
-  selectedTask.value = task
-  const modal = document.getElementById('popBrowse')
-  if (modal) modal.style.display = 'block'
+const router = useRouter()
+const { tasks } = inject('tasks')
+const activeTask = ref(null)
+const isNewCardOpen = ref(false)
+
+const selectedTask = computed(() => {
+  if (props.taskId !== null && props.taskId !== undefined) {
+    return tasks.value.find((task) => String(task._id ?? task.id) === String(props.taskId)) || null
+  }
+  return activeTask.value
+})
+
+const closeTask = () => {
+  activeTask.value = null
+  if (props.taskId !== null && props.taskId !== undefined) router.push('/')
 }
 
-const onTaskCreated = async (newTask) => {
-  // Используем inject вместо прямого вызова API
-  const result = await addTask(newTask)
-  
-  if (result.success && taskDeskRef.value) {
-    taskDeskRef.value.refreshTasks()
-  }
-}
+const closeExit = () => router.push('/')
 </script>
