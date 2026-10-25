@@ -1,9 +1,9 @@
 <template>
-  <div class="pop-new-card" id="popNewCard" style="display: none;">
+  <div v-if="visible" class="pop-new-card is-open" role="dialog" aria-modal="true" aria-labelledby="new-task-title">
     <div class="pop-new-card__container">
       <div class="pop-new-card__block">
         <div class="pop-new-card__content">
-          <h3 class="pop-new-card__ttl">Создание задачи</h3>
+          <h3 id="new-task-title" class="pop-new-card__ttl">Создание задачи</h3>
           <a href="#" class="pop-new-card__close" @click.prevent="closeModal">✖</a>
           
           <div v-if="apiError" class="error-message">{{ apiError }}</div>
@@ -16,6 +16,7 @@
                   class="form-new__input"
                   type="text"
                   v-model="taskTitle"
+                  required
                   placeholder="Введите название задачи..."
                 />
               </div>
@@ -116,9 +117,16 @@
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, watch } from 'vue'
 
-const emit = defineEmits(['task-created'])
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['close'])
 
 // Получаем функцию создания задачи из provide
 const { addTask } = inject('tasks')
@@ -133,15 +141,25 @@ const apiError = ref('')
 // Календарь
 const currentDate = ref(new Date())
 const currentMonth = computed(() => {
-  return currentDate.value.toLocaleString('ru', { month: 'long', year: 'numeric' })
+  return formatMonth(currentDate.value)
 })
 
 const selectedDateStr = computed(() => {
-  return selectedDate.value || ''
+  if (!selectedDate.value) return ''
+  const [year, month, day] = selectedDate.value.split('-')
+  return `${day}.${month}.${year}`
 })
 
-const formatDate = (date) => {
-  return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
+const dateInputValue = (date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const formatMonth = (date) => {
+  const month = date.toLocaleString('ru-RU', { month: 'long', year: 'numeric' })
+  return month.charAt(0).toUpperCase() + month.slice(1).replace(/\sг\.$/, '')
 }
 
 const calendarDays = computed(() => {
@@ -174,7 +192,7 @@ const calendarDays = computed(() => {
     let classNames = 'calendar__cell _cell-day'
     if (isWeekend) classNames += ' _weekend'
     if (isToday) classNames += ' _current'
-    if (selectedDate.value === formatDate(date)) classNames += ' _active-day'
+    if (selectedDate.value === dateInputValue(date)) classNames += ' _active-day'
     
     days.push({
       day: i,
@@ -199,7 +217,7 @@ const calendarDays = computed(() => {
 
 const selectDate = (day) => {
   if (!day.isOtherMonth) {
-    selectedDate.value = formatDate(day.date)
+    selectedDate.value = dateInputValue(day.date)
   }
 }
 
@@ -221,19 +239,16 @@ const getCategoryText = (color) => {
 }
 
 const closeModal = () => {
-  const modal = document.getElementById('popNewCard')
-  if (modal) {
-    modal.style.display = 'none'
-  }
   taskTitle.value = ''
   taskDescription.value = ''
   selectedCategory.value = 'orange'
   selectedDate.value = ''
   apiError.value = ''
+  emit('close')
 }
 
 const createTask = async () => {
-  if (!taskTitle.value) {
+  if (!taskTitle.value.trim()) {
     apiError.value = 'Введите название задачи'
     return
   }
@@ -247,22 +262,56 @@ const createTask = async () => {
       description: taskDescription.value || '',
       topic: getCategoryText(selectedCategory.value),
       status: "Без статуса",
-      date: selectedDate.value ? new Date(selectedDate.value).toISOString() : new Date().toISOString()
+      date: selectedDate.value
+        ? new Date(`${selectedDate.value}T12:00:00`).toISOString()
+        : new Date().toISOString()
     }
     
     // Используем inject вместо прямого вызова API
     const result = await addTask(taskData)
     
     if (result.success) {
-      emit('task-created')
       closeModal()
     } else {
       apiError.value = result.error || 'Ошибка создания задачи'
     }
   } catch (error) {
-    apiError.value = error.error || 'Ошибка создания задачи'
+    apiError.value = error.message || 'Ошибка создания задачи'
   } finally {
     isCreating.value = false
   }
 }
+
+watch(
+  () => props.visible,
+  (visible) => {
+    if (visible) {
+      taskTitle.value = ''
+      taskDescription.value = ''
+      selectedCategory.value = 'orange'
+      selectedDate.value = ''
+      apiError.value = ''
+    }
+  }
+)
 </script>
+
+<style scoped>
+.pop-new-card.is-open {
+  display: block;
+}
+
+.categories__theme {
+  border: 0;
+  cursor: pointer;
+}
+
+.categories__theme p {
+  pointer-events: none;
+}
+
+.form-new__create:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+</style>

@@ -1,128 +1,183 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <h2>Вход в аккаунт</h2>
-      
-      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
-      
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <label>Логин</label>
-          <input type="text" v-model="loginValue" placeholder="Логин" />
-        </div>
-        
-        <div class="form-group">
-          <label>Пароль</label>
-          <input type="password" v-model="passwordValue" placeholder="Пароль" />
-        </div>
-        
-        <button type="submit" :disabled="isLoading">
+  <main class="auth-page login-page">
+    <section class="auth-card login-container" aria-labelledby="login-title">
+      <h2 id="login-title">Вход</h2>
+
+      <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
+
+      <form class="auth-form" @submit.prevent="handleLogin">
+        <label class="visually-hidden" for="login-email">Эл. почта</label>
+        <input
+          id="login-email"
+          v-model.trim="loginValue"
+          class="auth-input"
+          type="email"
+          name="login"
+          placeholder="Эл. почта"
+          autocomplete="username"
+          required
+        />
+        <label class="visually-hidden" for="login-password">Пароль</label>
+        <input
+          id="login-password"
+          v-model="passwordValue"
+          class="auth-input"
+          type="password"
+          name="password"
+          placeholder="Пароль"
+          autocomplete="current-password"
+          required
+        />
+        <button class="auth-submit _hover01" type="submit" :disabled="isLoading">
           {{ isLoading ? 'Вход...' : 'Войти' }}
         </button>
+        <div class="auth-links">
+          <p>Нужно зарегистрироваться?</p>
+          <router-link to="/register">Регистрируйтесь здесь</router-link>
+        </div>
       </form>
-      
-      <p>Тестовые данные: admin / admin</p>
-      <p><router-link to="/register">Зарегистрироваться</router-link></p>
-    </div>
-  </div>
+    </section>
+  </main>
 </template>
 
 <script setup>
-import { ref, inject } from 'vue'
+import { inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const { login } = inject('auth')  // ← Получаем функцию логина из provide
-
-const loginValue = ref('admin')
-const passwordValue = ref('admin')
+const { login } = inject('auth')
+const loginValue = ref('')
+const passwordValue = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
 const handleLogin = async () => {
-  if (!loginValue.value || !passwordValue.value) {
-    errorMessage.value = 'Заполните все поля'
-    return
-  }
-  
   isLoading.value = true
   errorMessage.value = ''
-  
-  // ← Используем inject вместо прямого вызова API
-  const result = await login(loginValue.value, passwordValue.value)
-  
-  if (result.success) {
-    router.push('/')
-  } else {
-    errorMessage.value = result.error || 'Ошибка входа'
+
+  try {
+    const result = await login(loginValue.value, passwordValue.value)
+    if (!result.success) {
+      errorMessage.value = result.error || 'Ошибка входа'
+      return
+    }
+    await router.push('/')
+  } catch (error) {
+    errorMessage.value = error.message || 'Ошибка входа'
+  } finally {
+    isLoading.value = false
   }
-  
-  isLoading.value = false
 }
 </script>
 
 <style scoped>
-.login-page {
+.auth-page {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background: var(--color-bg-light);
+  padding: 24px 16px;
+}
+
+.login-page {
+  background: #151419;
+  color: #fff;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 368px;
+  padding: 50px 60px;
+  border-radius: 10px;
+  text-align: center;
 }
 
 .login-container {
-  background: var(--color-white);
-  padding: 40px;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  background: #20202c;
+  border: 1px solid #414454;
 }
 
-.form-group {
+.auth-card h2 {
   margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
-.form-group input {
+.auth-input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid var(--color-border);
+  min-width: 0;
+  margin-bottom: 7px;
+  padding: 7px 9px;
+  border: 1px solid rgba(148, 166, 190, 0.4);
   border-radius: 8px;
-  font-size: 14px;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: 14px/21px Roboto, Arial, sans-serif;
 }
 
-button {
+.auth-input::placeholder {
+  color: #94a6be;
+}
+
+.auth-submit {
   width: 100%;
-  padding: 12px;
-  background: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
+  min-height: 30px;
+  margin: 13px 0 20px;
+  border: 0;
+  border-radius: 4px;
+  background: #565eef;
+  color: #fff;
+  font: 500 14px/21px Roboto, Arial, sans-serif;
 }
 
-button:hover {
-  background: var(--color-primary-hover);
-}
-
-button:disabled {
+.auth-submit:disabled {
+  cursor: wait;
   opacity: 0.7;
-  cursor: not-allowed;
+}
+
+.auth-links {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.auth-links p {
+  color: rgba(148, 166, 190, 0.55);
+}
+
+.auth-links a {
+  color: rgba(148, 166, 190, 0.75);
+  text-decoration: underline;
 }
 
 .error-message {
-  background: #fee;
-  color: #e74c3c;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center;
+  margin-bottom: 12px;
+  color: #ff8b8b;
+  font-size: 13px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 375px) {
+  .auth-card {
+    padding: 40px 24px;
+  }
 }
 </style>

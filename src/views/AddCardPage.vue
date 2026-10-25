@@ -2,6 +2,7 @@
   <div class="add-card-page">
     <div class="container">
       <h2>Добавление новой задачи</h2>
+      <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
       <form @submit.prevent="handleSubmit">
         <div class="form-group">
           <label>Название задачи</label>
@@ -11,7 +12,9 @@
           <label>Описание</label>
           <textarea v-model="description"></textarea>
         </div>
-        <button type="submit">Создать</button>
+        <button type="submit" :disabled="isLoading">
+          {{ isLoading ? 'Создание...' : 'Создать' }}
+        </button>
       </form>
       <router-link to="/" class="back-link">← Назад</router-link>
     </div>
@@ -19,16 +22,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const { addTask } = inject('tasks')
 const title = ref('')
 const description = ref('')
+const errorMessage = ref('')
+const isLoading = ref(false)
 
-const handleSubmit = () => {
-  // Здесь будет логика добавления
-  router.push('/')
+const handleSubmit = async () => {
+  if (!title.value.trim()) {
+    errorMessage.value = 'Введите название задачи'
+    return
+  }
+
+  isLoading.value = true
+  errorMessage.value = ''
+  try {
+    const result = await addTask({
+      title: title.value.trim(),
+      description: description.value,
+      topic: 'Web Design',
+      status: 'Без статуса',
+      date: new Date().toISOString()
+    })
+    if (!result.success) {
+      errorMessage.value = result.error || 'Не удалось создать задачу'
+      return
+    }
+    await router.push('/')
+  } catch (error) {
+    errorMessage.value = error.message || 'Не удалось создать задачу'
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -68,5 +97,10 @@ button {
   margin-top: 20px;
   color: var(--color-primary);
   text-decoration: none;
+}
+
+.error-message {
+  margin: 16px 0;
+  color: #e74c3c;
 }
 </style>

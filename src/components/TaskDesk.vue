@@ -2,40 +2,38 @@
   <main class="main">
     <div class="container">
       <div class="main__block">
-        <div class="main__content">
-          <div v-if="isLoading" class="loading-container">
-            <div class="loading-spinner"></div>
-            <p class="loading-text">Данные загружаются...</p>
-          </div>
+        <div v-if="isLoading" class="loading-container" role="status">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Данные загружаются...</p>
+        </div>
 
-          <div v-else-if="error" class="error-container">
-            <p class="error-text">{{ error }}</p>
-            <button class="retry-btn" @click="loadTasks">Повторить</button>
-          </div>
+        <div v-else-if="error" class="error-container" role="alert">
+          <p class="error-text">{{ error }}</p>
+          <button class="retry-btn" type="button" @click="loadTasks">Повторить</button>
+        </div>
 
-          <div v-else-if="!hasTasks" class="empty-container">
-            <p class="empty-text">Задач нет</p>
-          </div>
+        <div v-else-if="!hasTasks" class="empty-container">
+          <p class="empty-text">Задач нет</p>
+        </div>
 
-          <template v-else>
-            <TaskColumn 
-              v-for="column in columns" 
-              :key="column.status"
-              :column-title="column.title"
-            >
-              <Task 
-                v-for="task in column.tasks"
-                :key="task._id"
-                :task-id="task._id"
-                :theme="getThemeClass(task.topic)"
-                :theme-text="task.topic"
-                :task-title="task.title"
-                :date="formatDate(task.date)"
-                :description="task.description"
-                @open-task="handleOpenTask"
-              />
-            </TaskColumn>
-          </template>
+        <div v-else class="main__content">
+          <p v-if="actionError" class="task-action-error" role="alert">{{ actionError }}</p>
+          <TaskColumn
+            v-for="column in columns"
+            :key="column.status"
+            :column-title="column.title"
+            :column-status="column.status"
+            @drop-task="moveTask"
+          >
+            <Task
+              v-for="task in column.tasks"
+              :key="task._id || task.id"
+              :task="task"
+              @open-task="$emit('open-task', $event)"
+              @drag-task="draggedTask = $event"
+              @drag-end="draggedTask = null"
+            />
+          </TaskColumn>
         </div>
       </div>
     </div>
@@ -43,85 +41,73 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject, watch } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import TaskColumn from './TaskColumn.vue'
 import Task from './Task.vue'
 import { columnStatuses } from '../data/statuses.js'
 
-const emit = defineEmits(['open-task'])
+defineEmits(['open-task'])
 
-// Получаем данные и функции из provide
-const { tasks, isLoading, error, loadTasks } = inject('tasks')
-
-const columns = ref([])
-
-
-
-const hasTasks = computed(() => {
-  return columns.value.some(column => column.tasks.length > 0)
-})
-
-const getThemeClass = (topic) => {
-  const themes = {
-    "Web Design": "orange",
-    "Research": "green",
-    "Copywriting": "purple"
-  }
-  return themes[topic] || "orange"
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'Дата не указана'
-  const date = new Date(dateString)
-  return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
-}
-
-const updateColumns = () => {
-  columns.value = columnStatuses.map(column => ({
+const { tasks, isLoading, error, loadTasks, updateTask } = inject('tasks')
+const columns = computed(() =>
+  columnStatuses.map((column) => ({
     ...column,
-    tasks: tasks.value.filter(task => task.status === column.status)
+    tasks: tasks.value.filter((task) => task.status === column.status)
   }))
-}
+)
+const hasTasks = computed(() => tasks.value.length > 0)
+const draggedTask = ref(null)
+const actionError = ref('')
 
-const handleOpenTask = (task) => {
-  emit('open-task', task)
-}
+const moveTask = async (status) => {
+  const task = draggedTask.value
+  draggedTask.value = null
 
-// Обновить задачи (для родительского компонента)
-const refreshTasks = () => {
-  loadTasks()
-}
+  if (!task || task.status === status) return
 
-// Следим за изменением задач
-watch(tasks, () => {
-  updateColumns()
-}, { deep: true, immediate: true })
+  const id = task._id ?? task.id
+  if (id === undefined || id === null) {
+    actionError.value = 'Не удалось определить задачу'
+    return
+  }
+
+  const result = await updateTask(id, {
+    title: task.title,
+    description: task.description || '',
+    topic: task.topic,
+    status,
+    date: task.date
+  })
+
+  if (!result.success) actionError.value = result.error
+}
 
 onMounted(() => {
-  loadTasks()
-})
-
-defineExpose({
-  refreshTasks,
-  loadTasks
+  if (!tasks.value.length) loadTasks()
 })
 </script>
 
 <style scoped>
-.loading-container {
+.loading-container,
+.empty-container,
+.error-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 400px;
   width: 100%;
 }
 
+.loading-container,
+.error-container {
+  flex-direction: column;
+}
+
 .loading-spinner {
   width: 60px;
   height: 60px;
   border: 4px solid #eaeef6;
-  border-top: 4px solid #565eef;
+  border-top-color: #565eef;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -130,14 +116,7 @@ defineExpose({
   margin-top: 20px;
   font-size: 16px;
   color: #94a6be;
-}
-
-.empty-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  width: 100%;
+  font-family: 'Roboto', sans-serif;
 }
 
 .empty-text {
@@ -146,18 +125,13 @@ defineExpose({
   text-align: center;
 }
 
-.error-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  width: 100%;
+.error-text,
+.task-action-error {
+  color: #e74c3c;
 }
 
 .error-text {
   font-size: 16px;
-  color: #e74c3c;
   margin-bottom: 20px;
 }
 
@@ -165,13 +139,15 @@ defineExpose({
   padding: 10px 20px;
   background: #565eef;
   color: white;
-  border: none;
+  border: 0;
   border-radius: 8px;
-  cursor: pointer;
+}
+
+.task-action-error {
+  margin: 0 10px 12px;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
