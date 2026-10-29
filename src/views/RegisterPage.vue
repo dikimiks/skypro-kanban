@@ -64,6 +64,11 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 const handleRegister = async () => {
+  if (!nameValue.value.trim() || !loginValue.value.trim() || !passwordValue.value.trim()) {
+    errorMessage.value = 'Заполните все поля'
+    return
+  }
+
   isLoading.value = true
   errorMessage.value = ''
 

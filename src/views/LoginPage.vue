@@ -52,6 +52,11 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 
 const handleLogin = async () => {
+  if (!loginValue.value.trim() || !passwordValue.value.trim()) {
+    errorMessage.value = 'Заполните все поля'
+    return
+  }
+
   isLoading.value = true
   errorMessage.value = ''
 

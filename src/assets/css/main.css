@@ -1,22 +1,3 @@
-:root {
-  --color-orange-bg: #ffe4c2;
-  --color-orange-text: #ff6d00;
-  --color-green-bg: #b4fdd1;
-  --color-green-text: #06b16e;
-  --color-purple-bg: #e9d4ff;
-  --color-purple-text: #9a48f1;
-  --color-gray-bg: #94a6be;
-  --color-gray-text: #ffffff;
-  --color-primary: #565eef;
-  --color-primary-hover: #33399b;
-  --color-border: #d4dbe5;
-  --color-text: #000000;
-  --color-text-secondary: #94a6be;
-  --color-bg: #f1f1f1;
-  --color-bg-light: #eaeef6;
-  --color-white: #ffffff;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -300,7 +281,7 @@ body {
 .pop-new-card {
   display: none;
   width: 100%;
-  min-width: 0;
+  min-width: 375px;
   height: 100%;
   min-height: 100vh;
   position: absolute;
@@ -564,7 +545,7 @@ body {
   display: none;
   width: 100%;
   height: 100%;
-  min-width: 0;
+  min-width: 375px;
   min-height: 100vh;
   position: absolute;
   top: 0;
@@ -1107,85 +1088,4 @@ body {
   .pop-exit__form-group {
     display: block;
   }
-}
-
-.app-layout.theme-dark {
-  --color-text: #ffffff;
-  --color-bg: #151419;
-  --color-bg-light: #151419;
-  --color-white: #20202c;
-  --color-border: #414454;
-}
-
-.app-layout.theme-dark .wrapper,
-.app-layout.theme-dark .main {
-  background-color: #151419;
-  color: #ffffff;
-}
-
-.app-layout.theme-dark .header,
-.app-layout.theme-dark .header__pop-user-set,
-.app-layout.theme-dark .pop-new-card__block,
-.app-layout.theme-dark .pop-browse__block,
-.app-layout.theme-dark .pop-exit__block {
-  background-color: #20202c;
-  color: #ffffff;
-}
-
-.app-layout.theme-dark .header__logo._light {
-  display: none;
-}
-
-.app-layout.theme-dark .header__logo._dark {
-  display: block;
-}
-
-.app-layout.theme-dark .pop-user-set__name,
-.app-layout.theme-dark .pop-user-set__theme p,
-.app-layout.theme-dark .pop-new-card__ttl,
-.app-layout.theme-dark .pop-browse__ttl,
-.app-layout.theme-dark .subttl {
-  color: #ffffff;
-}
-
-.app-layout.theme-dark .form-new__input,
-.app-layout.theme-dark .form-new__area,
-.app-layout.theme-dark .form-browse__area,
-.app-layout.theme-dark .task-date-input {
-  color: #ffffff;
-  background-color: #151419;
-}
-
-@media screen and (max-width: 375px) {
-  .pop-new-card__block,
-  .pop-browse__block {
-    width: 100%;
-  }
-
-  .calendar__cells {
-    width: 100%;
-    height: auto;
-    justify-content: space-between;
-  }
-
-  .calendar__cell {
-    width: calc((100% - 12px) / 7);
-    height: 36px;
-    margin: 0;
-  }
-
-  .pop-new-card__container,
-  .pop-browse__container {
-    min-width: 0;
-  }
-}
-
-@media screen and (max-width: 660px) {
-  .pop-new-card,
-  .pop-browse {
-    overflow-y: auto;
-    max-height: 100vh;
-  }
-}
-
-/*# sourceMappingURL=main.css.map */
+}/*# sourceMappingURL=main.css.map */

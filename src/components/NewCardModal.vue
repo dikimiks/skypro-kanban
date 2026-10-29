@@ -6,7 +6,7 @@
           <h3 id="new-task-title" class="pop-new-card__ttl">Создание задачи</h3>
           <a href="#" class="pop-new-card__close" @click.prevent="closeModal">✖</a>
           
-          <div v-if="apiError" class="error-message">{{ apiError }}</div>
+          <div v-if="apiError" class="error-message" role="alert">{{ apiError }}</div>
           
           <div class="pop-new-card__wrap">
             <div class="pop-new-card__form form-new">
@@ -258,7 +258,7 @@ const createTask = async () => {
   
   try {
     const taskData = {
-      title: taskTitle.value,
+      title: taskTitle.value.trim(),
       description: taskDescription.value || '',
       topic: getCategoryText(selectedCategory.value),
       status: "Без статуса",
