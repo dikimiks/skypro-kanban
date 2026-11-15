@@ -1,12 +1,27 @@
 const API_URL = 'https://wedev-api.sky.pro/api'
 
+const readResponse = async (response) => {
+  const text = await response.text()
+  if (!text) return {}
+
+  try {
+    const data = JSON.parse(text)
+    if (!data || typeof data !== 'object') {
+      throw new Error('invalid response data')
+    }
+    return data
+  } catch {
+    throw new Error('Сервер вернул некорректный ответ')
+  }
+}
+
 export const login = async (login, password) => {
   const response = await fetch(`${API_URL}/user/login`, {
     method: 'POST',
     body: JSON.stringify({ login, password })
   })
-  const data = await response.json()
-  if (!response.ok) throw new Error(data.error)
+  const data = await readResponse(response)
+  if (!response.ok) throw new Error(data.error || `Ошибка входа (${response.status})`)
   return data
 }
 
@@ -15,8 +30,8 @@ export const register = async (login, name, password) => {
     method: 'POST',
     body: JSON.stringify({ login, name, password })
   })
-  const data = await response.json()
-  if (!response.ok) throw new Error(data.error)
+  const data = await readResponse(response)
+  if (!response.ok) throw new Error(data.error || `Ошибка регистрации (${response.status})`)
   return data
 }
 
@@ -25,8 +40,8 @@ export const getTasks = async () => {
   const response = await fetch(`${API_URL}/kanban`, {
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  const data = await response.json()
-  if (!response.ok) throw new Error(data.error)
+  const data = await readResponse(response)
+  if (!response.ok) throw new Error(data.error || `Не удалось загрузить задачи (${response.status})`)
   return data
 }
 
@@ -37,8 +52,8 @@ export const createTask = async (taskData) => {
     headers: { 'Authorization': `Bearer ${token}` },
     body: JSON.stringify(taskData)
   })
-  const data = await response.json()
-  if (!response.ok) throw new Error(data.error)
+  const data = await readResponse(response)
+  if (!response.ok) throw new Error(data.error || `Не удалось создать задачу (${response.status})`)
   return data
 }
 
@@ -49,8 +64,8 @@ export const updateTask = async (id, taskData) => {
     headers: { 'Authorization': `Bearer ${token}` },
     body: JSON.stringify(taskData)
   })
-  const data = await response.json()
-  if (!response.ok) throw new Error(data.error)
+  const data = await readResponse(response)
+  if (!response.ok) throw new Error(data.error || `Не удалось обновить задачу (${response.status})`)
   return data
 }
 
@@ -60,7 +75,7 @@ export const deleteTask = async (id) => {
     method: 'DELETE',
     headers: { 'Authorization': `Bearer ${token}` }
   })
-  const data = await response.json()
-  if (!response.ok) throw new Error(data.error)
+  const data = await readResponse(response)
+  if (!response.ok) throw new Error(data.error || `Не удалось удалить задачу (${response.status})`)
   return data
 }

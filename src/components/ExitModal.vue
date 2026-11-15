@@ -1,15 +1,22 @@
 <template>
-  <div class="pop-exit" id="popExit" style="display: none;">
+  <div
+    v-if="visible"
+    class="pop-exit is-open"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="exit-title"
+    @click.self="closeModal"
+  >
     <div class="pop-exit__container">
       <div class="pop-exit__block">
         <div class="pop-exit__ttl">
-          <h2>Выйти из аккаунта?</h2>
+          <h2 id="exit-title">Выйти из аккаунта?</h2>
         </div>
         <div class="pop-exit__form-group">
-          <button class="pop-exit__exit-yes _hover01" @click="handleExit">
+          <button class="pop-exit__exit-yes _hover01" type="button" @click="logout">
             Да, выйти
           </button>
-          <button class="pop-exit__exit-no _hover03" @click="closeModal">
+          <button class="pop-exit__exit-no _hover03" type="button" @click="closeModal">
             Нет, остаться
           </button>
         </div>
@@ -20,28 +27,22 @@
 
 <script setup>
 import { inject } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
+defineProps({
+  visible: {
+    type: Boolean,
+    default: false
+  }
+})
 
-// Получаем функцию выхода из provide
+const emit = defineEmits(['close'])
 const { logout } = inject('auth')
 
-const closeModal = () => {
-  const modal = document.getElementById('popExit')
-  if (modal) {
-    modal.style.display = 'none'
-  }
-}
-
-const handleExit = () => {
-  // Используем функцию logout из inject вместо прямого удаления из localStorage
-  logout()
-  
-  // Закрываем модалку
-  closeModal()
-  
-  // Перенаправляем на страницу входа
-  router.push('/login')
-}
+const closeModal = () => emit('close')
 </script>
+
+<style scoped>
+.pop-exit.is-open {
+  display: block;
+}
+</style>
