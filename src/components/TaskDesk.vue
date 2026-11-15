@@ -13,7 +13,7 @@
         </div>
 
         <div v-else-if="!hasTasks" class="empty-container">
-          <p class="empty-text">Задач нет</p>
+          <p class="empty-text">Новых задач нет</p>
         </div>
 
         <div v-else class="main__content">

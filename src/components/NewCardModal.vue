@@ -1,5 +1,12 @@
 <template>
-  <div v-if="visible" class="pop-new-card is-open" role="dialog" aria-modal="true" aria-labelledby="new-task-title">
+  <div
+    v-if="visible"
+    class="pop-new-card is-open"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="new-task-title"
+    @click.self="closeModal"
+  >
     <div class="pop-new-card__container">
       <div class="pop-new-card__block">
         <div class="pop-new-card__content">
@@ -258,7 +265,7 @@ const createTask = async () => {
   
   try {
     const taskData = {
-      title: taskTitle.value,
+      title: taskTitle.value.trim(),
       description: taskDescription.value || '',
       topic: getCategoryText(selectedCategory.value),
       status: "Без статуса",

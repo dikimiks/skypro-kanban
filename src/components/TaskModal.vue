@@ -322,6 +322,11 @@ const taskPayload = () => ({
 })
 
 const saveTask = async () => {
+  if (!props.task?.title?.trim()) {
+    apiError.value = 'Название задачи не может быть пустым'
+    return
+  }
+
   const id = props.task?._id ?? props.task?.id
   if (id === undefined || id === null) {
     apiError.value = 'Не удалось определить задачу'
